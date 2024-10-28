@@ -6,3 +6,4 @@ djangorestframework-simplejwt
 stripe
 whitenoise
 gunicorn
+uvicorn
