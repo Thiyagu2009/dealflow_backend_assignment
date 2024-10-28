@@ -129,7 +129,6 @@ def payment_success(request):
                 currency=payment_intent.currency.upper(),
                 status='success',
                 payment_method=payment_intent.payment_method_types[0],
-                usd_amount=convert_to_usd(payment_intent.amount , payment_intent.currency.upper())
             )
             payment_link.status = 'completed'
             payment_link.save()
@@ -140,8 +139,10 @@ def payment_success(request):
             })
         
     except stripe.error.StripeError as e:
+        print(e)
         return render(request, 'payments/error.html', {'error': str(e)})
     except PaymentLink.DoesNotExist:
         return render(request, 'payments/error.html', {'error': 'Payment not found'})
     except Exception as e:
+        print(e)
         return render(request, 'payments/error.html', {'error': 'An error occurred'})
