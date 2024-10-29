@@ -37,7 +37,7 @@ class PaymentLinkCreateSerializer(serializers.Serializer):
     expiration_date = serializers.DateField(required=False, allow_null=True)
 
     def validate_currency(self, value):
-        valid_currencies = ['USD', 'EUR', 'GBP', 'INR']  # Add more as needed
+        valid_currencies = ['USD', 'EUR', 'GBP', 'INR', 'AUD', 'CAD', 'CHF', 'JPY', 'NZD', 'SGD']  # Add more as needed
         if value.upper() not in valid_currencies:
             raise serializers.ValidationError(f"Currency must be one of {valid_currencies}")
         return value.upper()

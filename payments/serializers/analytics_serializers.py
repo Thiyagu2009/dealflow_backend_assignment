@@ -17,7 +17,7 @@ class AnalyticsQueryParamsSerializer(serializers.Serializer):
 
 
 class PaymentMethodStatsSerializer(serializers.Serializer):
-    payment_method = serializers.CharField()
+    payment_method = serializers.CharField(allow_blank=True, required=False)
     count = serializers.IntegerField()
     total_amount = serializers.DecimalField(max_digits=10, decimal_places=2)
     success_count = serializers.IntegerField()

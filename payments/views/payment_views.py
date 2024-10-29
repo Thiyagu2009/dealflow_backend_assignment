@@ -105,10 +105,13 @@ def create_payment_intent(request, payment_id):
         intent =stripe.PaymentIntent.create(
             amount=int(float(payment_link.amount) * 100),  # Convert to cents
             currency=payment_link.currency.lower(),
+            # automatic_payment_methods={
+            #     'enabled': True,
+            # },
             payment_method_types=[
                 'card',
                 'amazon_pay',
-            ],
+            ] if payment_link.currency == 'USD' else ['card'],
             metadata={
                 'payment_link_id': payment_link.unique_id
             },
