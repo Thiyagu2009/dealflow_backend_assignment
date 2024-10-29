@@ -59,6 +59,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -154,6 +155,7 @@ REST_FRAMEWORK = {
 STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY')
 STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET', default='')
+API_NINJA_KEY = env('API_NINJA_KEY')
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
@@ -166,3 +168,6 @@ SIMPLE_JWT = {
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
+
+CORS_ALLOW_ALL_ORIGINS = True  # Only for development! Configure properly for production
+CORS_ALLOW_CREDENTIALS = True
