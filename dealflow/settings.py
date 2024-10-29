@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'payments',
     'drf_yasg',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
