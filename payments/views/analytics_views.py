@@ -1,22 +1,22 @@
-from rest_framework.decorators import api_view, permission_classes
+from django.db.models import Sum, Count, Q
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
-from django.db.models import Sum, Count
-from django.db.models.functions import TruncDate
-from stripe import PaymentLink
-from payments.models import PaymentLink as PaymentLinkModel
+
+from payments.models import Payment, PaymentLink as PaymentLinkModel
 from payments.serializers.analytics_serializers import (
     AnalyticsQueryParamsSerializer,
-    AnalyticsResponseSerializer,
     PaymentMethodStatsSerializer,
     CurrencyStatsSerializer
 )
-from payments.models import Payment
-from payments.utils import convert_to_usd
-from django.db.models import Q
+from payments.serializers.payment_serializers import PaymentLinkSerializer
+from dealflow.throttlers import AnalyticsUserThrottle
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@throttle_classes([AnalyticsUserThrottle])
 def payment_analytics(request):
     """
     Get payment analytics with validated filters
@@ -46,8 +46,7 @@ def payment_analytics(request):
         if validated_data.get('end_amount'):
             payments = payments.filter(amount__lte=validated_data['end_amount'])
        
-        analytics_data = payments.values('id','amount','currency','payment_method','status','created_at')
-        
+        analytics_data = payments.values('id','amount','currency','payment_method','status','created_at','payment_link__unique_id')
         
         return Response(analytics_data)
 
@@ -56,9 +55,12 @@ def payment_analytics(request):
             "error": "Failed to fetch analytics",
             "detail": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@throttle_classes([AnalyticsUserThrottle])
 def payment_methods_summary(request):
     """
     Get validated summary of payment methods
@@ -85,9 +87,11 @@ def payment_methods_summary(request):
             "detail": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def currency_summary(request):
+@throttle_classes([AnalyticsUserThrottle])
+def calculate_total_payments(request):
     """
     Get validated currency summary
     """
@@ -111,45 +115,25 @@ def currency_summary(request):
             "detail": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def list_payments(request):
+@throttle_classes([AnalyticsUserThrottle])
+def payment_link_list(request):
     """
-    List payment links with their status
+    List all payment links for the authenticated user
     """
     try:
-        payment_links = PaymentLinkModel.objects.filter(user=request.user).values(
-            'unique_id', 'amount', 'currency', 'status', 'description', 'created_at'
+        payment_links = PaymentLinkModel.objects.filter(user=request.user).order_by('-created_at')
+        serializer = PaymentLinkSerializer(
+            payment_links, 
+            many=True,
+            context={'request': request}
         )
-
-        # Fetch payment status for each payment link
-        payment_statuses = []
-        for link in payment_links:
-            payments = Payment.objects.filter(payment_link__unique_id=link['unique_id'])
-            status_summary = payments.values('status','payment_method','created_at')
-            payment_statuses.append({
-                'payment_link': link,
-                'status_summary': list(status_summary)
-            })
-
-        return Response(payment_statuses)
-
+        return Response(serializer.data)
     except Exception as e:
         return Response({
-            "error": "Failed to fetch payment links list with status",
+            "error": "Failed to fetch payment links",
             "detail": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def calculate_total_amount(request):
-    """
-    Calculate total amount of payments in USD
-    """
-    payments  = Payment.objects.filter(payment_link__user=request.user, status='success')
-    total_amount = 0
-    for payment in payments:
-        print(payment.amount, payment.currency)
-        total_amount += convert_to_usd(payment.amount, payment.currency)
-    return Response({"total_amount": total_amount, "currency": "USD"})

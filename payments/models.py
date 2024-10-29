@@ -7,7 +7,6 @@ from django.utils.crypto import get_random_string
 class PaymentLink(models.Model):
     STATUS_CHOICES = [
         ('active', 'Active'),
-        ('expired', 'Expired'),
         ('completed', 'Completed')
     ]
     
@@ -39,7 +38,7 @@ class Payment(models.Model):
         ('success', 'Success'),
         ('failed', 'Failed')
     ]
-
+    
     payment_link = models.ForeignKey(PaymentLink, on_delete=models.CASCADE, related_name='payments')
     stripe_payment_id = models.CharField(max_length=100, unique=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -51,6 +50,10 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     metadata = models.JSONField(default=dict, blank=True)
+    is_disputed = models.BooleanField(default=False)
+    dispute_reason = models.CharField(max_length=255, blank=True, null=True)
+    dispute_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    dispute_created_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.stripe_payment_id} - {self.status}"

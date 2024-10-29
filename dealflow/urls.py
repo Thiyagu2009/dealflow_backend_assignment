@@ -23,7 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('users.urls')),
     path('api/', include('payments.urls')),
-    path('payment/success/', payment_views.payment_success, name='payment-success'),
+    path('payment/completed/', payment_views.payment_completed, name='payment-success'),
     path('payment/<str:payment_id>/', payment_views.payment_page, name='payment-page'),
-
+    path('webhooks/stripe/', payment_views.stripe_webhook, name='stripe-webhook'),
 ]

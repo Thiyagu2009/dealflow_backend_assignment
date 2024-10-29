@@ -7,10 +7,9 @@ urlpatterns = [
     path('analytics/', analytics_views.payment_analytics, name='payment-analytics'),
     path('analytics/payment-methods/', analytics_views.payment_methods_summary, 
          name='payment-methods-summary'),
-    path('analytics/currency/', analytics_views.currency_summary, 
+    path('analytics/payments/total/', analytics_views.calculate_total_payments, 
          name='currency-summary'),
-    path('analytics/payments/', analytics_views.list_payments, 
-         name='list-payments'),
-    path('analytics/total-amount/', analytics_views.calculate_total_amount, 
-         name='calculate-total-amount'),
+    path('analytics/payment-links/', analytics_views.payment_link_list, 
+         name='list-payment-links'),
+   
 ]
