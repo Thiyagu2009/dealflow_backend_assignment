@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from payments.views import payment_views
+from payments.views import payment_views, stripe_webhooks
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,5 +25,5 @@ urlpatterns = [
     path('api/', include('payments.urls')),
     path('payment/completed/', payment_views.payment_completed, name='payment-success'),
     path('payment/<str:payment_id>/', payment_views.payment_page, name='payment-page'),
-    path('webhooks/stripe/', payment_views.stripe_webhook, name='stripe-webhook'),
+    path('webhooks/stripe/', stripe_webhooks.stripe_webhook, name='stripe-webhook'),
 ]

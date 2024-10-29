@@ -1,3 +1,5 @@
+import logging
+
 from django.db.models import Sum, Count, Q
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
@@ -14,6 +16,8 @@ from payments.serializers.payment_serializers import PaymentLinkSerializer
 from dealflow.throttlers import AnalyticsUserThrottle
 
 
+logger = logging.getLogger(__name__)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @throttle_classes([AnalyticsUserThrottle])
@@ -22,6 +26,7 @@ def payment_analytics(request):
     Get payment analytics with validated filters
     """
     # Validate query parameters
+    logger.info(f"Received request for payment analytics: {request.GET}")
     query_serializer = AnalyticsQueryParamsSerializer(data=request.GET)
     if not query_serializer.is_valid():
         return Response(query_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -47,10 +52,10 @@ def payment_analytics(request):
             payments = payments.filter(amount__lte=validated_data['end_amount'])
        
         analytics_data = payments.values('id','amount','currency','payment_method','status','created_at','payment_link__unique_id')
-        
         return Response(analytics_data)
 
     except Exception as e:
+        logger.error(f"Error fetching payment analytics: {str(e)}")
         return Response({
             "error": "Failed to fetch analytics",
             "detail": str(e)
@@ -66,6 +71,7 @@ def payment_methods_summary(request):
     Get validated summary of payment methods
     """
     try:
+        logger.info(f"Received request for payment methods summary: {request.user}")
         payments = Payment.objects.filter(payment_link__user=request.user)
         
         summary = payments.values('payment_method').annotate(
@@ -82,6 +88,7 @@ def payment_methods_summary(request):
         return Response(serializer.validated_data)
 
     except Exception as e:
+        logger.error(f"Error fetching payment methods summary: {str(e)}")
         return Response({
             "error": "Failed to fetch payment methods summary",
             "detail": str(e)
@@ -96,7 +103,8 @@ def calculate_total_payments(request):
     Get validated currency summary
     """
     try:
-        payments = Payment.objects.filter(payment_link__user=request.user)
+        logger.info(f"Received request for total payments: {request.user}")
+        payments = Payment.objects.filter(payment_link__user=request.user, status='success')
         
         summary = payments.values('currency').annotate(
             count=Count('id'),
@@ -110,12 +118,12 @@ def calculate_total_payments(request):
         return Response(serializer.validated_data)
 
     except Exception as e:
+        logger.error(f"Error fetching currency summary: {str(e)}")
         return Response({
             "error": "Failed to fetch currency summary",
             "detail": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -125,6 +133,7 @@ def payment_link_list(request):
     List all payment links for the authenticated user
     """
     try:
+        logger.info(f"Received request for payment links: {request.user}")
         payment_links = PaymentLinkModel.objects.filter(user=request.user).order_by('-created_at')
         serializer = PaymentLinkSerializer(
             payment_links, 
@@ -133,6 +142,7 @@ def payment_link_list(request):
         )
         return Response(serializer.data)
     except Exception as e:
+        logger.error(f"Error fetching payment links: {str(e)}")
         return Response({
             "error": "Failed to fetch payment links",
             "detail": str(e)
