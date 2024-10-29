@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view, permission_classes, throttle_cla
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from dealflow.throttlers import PaymentAnonThrottle, PaymentUserThrottle
-from payments.models import PaymentLink
+from payments.models import Payment, PaymentLink
 from payments.serializers.payment_serializers import PaymentLinkCreateSerializer
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -156,7 +156,7 @@ def payment_completed(request):
         
         if payment_link_id:
             payment_link = PaymentLink.objects.get(unique_id=payment_link_id, status="active")
-            # Create or update payment record
+
             if status == 'succeeded':  
                 logger.info(f"Payment succeeded: {payment_link_id}")
                 return render(request, 'payments/success.html', {

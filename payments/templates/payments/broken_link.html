@@ -4,6 +4,13 @@
 <head>
     <title>Broken Link</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        // Disable back button
+        history.pushState(null, null, document.URL);
+        window.addEventListener('popstate', function () {
+            history.pushState(null, null, document.URL);
+        });
+    </script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -46,7 +53,6 @@
         <div class="warning-icon">⚠</div>
         <h1>Something Isn't Right</h1>
         <p class="warning-message">It seems that the link you followed is broken or no longer exists. Please check the URL or return to the homepage.</p>
-        <a href="/" class="button">Return to Home</a>
     </div>
 </body>
 </html>
