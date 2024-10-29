@@ -149,13 +149,16 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '1000/hour',    # For UserRateThrottle
+        'anon': '400/hour',     # For AnonRateThrottle
+    }
 }
 
 # Stripe settings
 STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY')
 STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET', default='')
-API_NINJA_KEY = env('API_NINJA_KEY')
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
@@ -171,3 +174,4 @@ STATIC_URL = '/static/'
 
 CORS_ALLOW_ALL_ORIGINS = True  # Only for development! Configure properly for production
 CORS_ALLOW_CREDENTIALS = True
+
