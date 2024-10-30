@@ -2,6 +2,25 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-11G9SMXFW3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        
+        gtag('config', 'G-11G9SMXFW3');
+
+        // Track payment events
+        function trackPaymentEvent(status, amount, currency) {
+            gtag('event', 'payment_attempt', {
+                'status': status,
+                'currency': currency,
+                'value': amount
+            });
+        }
+    </script>
+    
     <title>Payment Page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://js.stripe.com/v3/"></script>
@@ -58,9 +77,10 @@
 <body>
     <div class="container">
         <div class="payment-details">
-            <h2>Payment Details</h2>
-            <p><strong>Amount:</strong> {{ payment.amount }} {{ payment.currency }}</p>
-            <p><strong>Description:</strong> {{ payment.description }}</p>
+            <h2 style="text-align: center;">Make your payment</h2>
+            <h3 style="color: red; text-align: center;">Hosted & Processed on the backend django server</h3>
+            <p><strong>AMOUNT:</strong> {{ payment.amount }} {{ payment.currency|upper }}</p>
+            <p><strong>DESCRIPTION:</strong> {{ payment.description }}</p>
         </div>
 
         <form id="payment-form">
@@ -108,6 +128,8 @@
                 console.error("Error:", e);
                 document.getElementById("error-message").textContent = 
                     "Failed to initialize payment. Please try again.";
+                // Track initialization error
+                trackPaymentEvent('init_error', {{ payment.amount }}, '{{ payment.currency|upper }}');
             }
         }
 
@@ -127,15 +149,21 @@
                 if (error) {
                     document.getElementById("error-message").textContent = error.message;
                     submitButton.disabled = false;
+                    // Track payment error
+                    trackPaymentEvent('payment_error', {{ payment.amount }}, '{{ payment.currency|upper }}');
                 } else {
                     document.getElementById("success-message").style.display = "block";
                     document.getElementById("payment-form").style.display = "none";
+                    // Track successful payment
+                    trackPaymentEvent('payment_success', {{ payment.amount }}, '{{ payment.currency|upper }}');
                 }
             } catch (e) {
                 console.error("Error:", e);
                 document.getElementById("error-message").textContent = 
                     "Payment failed. Please try again.";
                 submitButton.disabled = false;
+                // Track payment error
+                trackPaymentEvent('payment_error', {{ payment.amount }}, '{{ payment.currency|upper }}');
             }
         });
     </script>
