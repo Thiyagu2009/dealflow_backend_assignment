@@ -8,19 +8,23 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        
-        gtag('config', 'G-11G9SMXFW3');
 
-        // Track payment events
+        // Set initial page path with unique payment ID
+        gtag('config', 'G-11G9SMXFW3', {
+            'page_path': `/payment/{{ payment.unique_id }}`
+        });
+
+        // Track payment events with unique payment ID
         function trackPaymentEvent(status, amount, currency) {
             gtag('event', 'payment_attempt', {
                 'status': status,
                 'currency': currency,
-                'value': amount
+                'value': amount,
+                'payment_id': '{{ payment.unique_id }}'  // Add unique payment ID to each event
             });
         }
     </script>
-    
+
     <title>Payment Page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://js.stripe.com/v3/"></script>
@@ -78,7 +82,7 @@
     <div class="container">
         <div class="payment-details">
             <h2 style="text-align: center;">Make your payment</h2>
-            <h3 style="color: red; text-align: center;">Hosted & Processed on the backend django server</h3>
+            <h3 style="color: red; text-align: center;">Hosted & Processed on the backend Django server</h3>
             <p><strong>AMOUNT:</strong> {{ payment.amount }} {{ payment.currency|upper }}</p>
             <p><strong>DESCRIPTION:</strong> {{ payment.description }}</p>
         </div>
