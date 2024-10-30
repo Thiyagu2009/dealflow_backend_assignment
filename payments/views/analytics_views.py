@@ -3,7 +3,7 @@ import logging
 from django.db.models import Sum, Count, Q
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from payments.models import Payment, PaymentLink as PaymentLinkModel
@@ -147,3 +147,9 @@ def payment_link_list(request):
             "error": "Failed to fetch payment links",
             "detail": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health_check(request):
+    return Response({"status": "ok"})

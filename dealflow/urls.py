@@ -19,7 +19,7 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 
-from payments.views import payment_views, stripe_webhooks
+from payments.views import analytics_views, payment_views, stripe_webhooks
 from .docs import schema_view
 
 urlpatterns = [
@@ -29,6 +29,6 @@ urlpatterns = [
     path('payment/completed/', payment_views.payment_completed, name='payment-success'),
     path('payment/<str:payment_id>/', payment_views.payment_page, name='payment-page'),
     path('webhooks/stripe/', stripe_webhooks.stripe_webhook, name='stripe-webhook'),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-
+    path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('', analytics_views.health_check, name='health-check'),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
