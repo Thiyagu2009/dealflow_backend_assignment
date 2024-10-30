@@ -11,7 +11,7 @@ This app serves as a backend for a payment link service.
 
 #### API Documentation
 
-- Access the API documentation on Postman: [API Documentation](https://documenter.getpostman.com/view/27664433/2s93m1383z)
+- Access the API documentation: [API Documentation](https://mysite-3e95.onrender.com/api/docs/)
 
 ### Payment Page
 
