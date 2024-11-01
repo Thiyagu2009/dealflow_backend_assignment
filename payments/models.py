@@ -7,7 +7,8 @@ from django.utils.crypto import get_random_string
 class PaymentLink(models.Model):
     STATUS_CHOICES = [
         ('active', 'Active'),
-        ('completed', 'Completed')
+        ('completed', 'Completed'),
+        ('expired', 'Expired')
     ]
     
     unique_id = models.CharField(max_length=100, unique=True)
@@ -15,7 +16,8 @@ class PaymentLink(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, default='USD')
     description = models.TextField(blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    # Dynamic status field
+    #status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     expiration_date = models.DateField(blank=True, null=True)

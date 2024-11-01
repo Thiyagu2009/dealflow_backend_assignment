@@ -1,10 +1,11 @@
 import logging
 
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, Case, When, CharField, When, Value, F
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from datetime import datetime
 
 from payments.models import Payment, PaymentLink as PaymentLinkModel
 from payments.serializers.analytics_serializers import (
@@ -134,13 +135,35 @@ def payment_link_list(request):
     """
     try:
         logger.info(f"Received request for payment links: {request.user}")
-        payment_links = PaymentLinkModel.objects.filter(user=request.user).order_by('-created_at')
+        
+        # Get current datetime for comparison
+        current_date = datetime.now().date()
+        
+        payment_links = PaymentLinkModel.objects.filter(user=request.user).annotate(
+            is_expired=Case(
+                When(expiration_date__lt=current_date, then=True),
+            default=False,
+            output_field=CharField(),
+        )
+        ).annotate(
+            status=Case(
+                When(is_expired=True, then=Value('expired')),
+            default=Value('active'),
+            output_field=CharField(),
+            )
+        ).order_by('-created_at')
+
+
         serializer = PaymentLinkSerializer(
-            payment_links, 
+            payment_links,
             many=True,
             context={'request': request}
         )
+
+            # Debug log to check dates
+       
         return Response(serializer.data)
+
     except Exception as e:
         logger.error(f"Error fetching payment links: {str(e)}")
         return Response({

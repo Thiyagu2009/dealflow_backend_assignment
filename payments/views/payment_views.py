@@ -72,10 +72,10 @@ def payment_page(request, payment_id):
         logger.info(f"Received request to render payment page: {payment_id}")
         payment_link = get_object_or_404(PaymentLink, unique_id=payment_id)
 
-        if  payment_link.expiration_date < datetime.now().date():
+        if  payment_link.expiration_date <= datetime.now().date():
             logger.info(f"Payment link expired: {payment_id}")
             return render(request, 'payments/error.html', {'error': 'Payment link expired'})
-        elif payment_link.status == 'active':
+        else:
             logger.info(f"Payment link active: {payment_id}")
             return render(request, 'payments/payment_page.html', {
                 'payment': payment_link,
@@ -154,11 +154,12 @@ def payment_completed(request):
         # Retrieve the payment intent from Stripe
         payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
         logger.info(f"Payment intent status: {payment_intent.status}")
+        
         # Get the payment link ID from metadata
         payment_link_id = payment_intent.metadata.get('payment_link_id')
         
         if payment_link_id:
-            payment_link = PaymentLink.objects.get(unique_id=payment_link_id, status="active")
+            payment_link = PaymentLink.objects.get(unique_id=payment_link_id,expiration_date__gte=datetime.now().date())
 
             if status == 'succeeded':  
                 logger.info(f"Payment succeeded: {payment_link_id}")

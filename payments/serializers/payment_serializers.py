@@ -5,8 +5,9 @@ from rest_framework import serializers
 
 class PaymentLinkSerializer(serializers.ModelSerializer):
     payment_url = serializers.SerializerMethodField()
-    status = serializers.ChoiceField(choices=PaymentLink.STATUS_CHOICES, read_only=True)
-    
+    # Dynamic status field
+    status = serializers.CharField(read_only=True)
+
     class Meta:
         model = PaymentLink
         fields = [
@@ -19,9 +20,9 @@ class PaymentLinkSerializer(serializers.ModelSerializer):
             'created_at', 
             'updated_at',
             'expiration_date',
-            'payment_url'  # Include payment_url in response
+            'payment_url',
         ]
-        read_only_fields = ['unique_id', 'status', 'payment_url']
+        read_only_fields = ['unique_id', 'status', 'payment_url','status']
 
     def get_payment_url(self, obj):
         request = self.context.get('request')
@@ -35,7 +36,6 @@ class PaymentLinkCreateSerializer(serializers.Serializer):
     currency = serializers.CharField(max_length=3, default='USD')
     description = serializers.CharField(max_length=255)
     expiration_date = serializers.DateField(required=False, allow_null=True)
-
     def validate_currency(self, value):
         valid_currencies = ['USD', 'EUR', 'GBP', 'INR', 'AUD', 'CAD', 'CHF', 'JPY', 'NZD', 'SGD']  # Add more as needed
         if value.upper() not in valid_currencies:
