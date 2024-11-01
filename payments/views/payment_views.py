@@ -99,7 +99,7 @@ def create_payment_intent(request, payment_id):
     try:
         logger.info(f"Received request to create payment intent: {payment_id}")
         # Find payment link
-        payment_link = get_object_or_404(PaymentLink, unique_id=payment_id)
+        payment_link = get_object_or_404(PaymentLink, unique_id=payment_id, expiration_date__gte=datetime.now().date())
         
         # Create payment intent
         intent =stripe.PaymentIntent.create(
@@ -154,7 +154,7 @@ def payment_completed(request):
         # Retrieve the payment intent from Stripe
         payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
         logger.info(f"Payment intent status: {payment_intent.status}")
-        
+
         # Get the payment link ID from metadata
         payment_link_id = payment_intent.metadata.get('payment_link_id')
         
